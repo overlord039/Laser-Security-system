@@ -1,0 +1,51 @@
+#include <SoftwareSerial.h> 
+const String PHONE = "ENTER_YOUR_PHONE_NUMBER";
+#define rxPin 2
+#define txPin 3
+SoftwareSerial sim800L(rxPin,txPin);
+#define LASER_RECEIVER_PIN 4
+#define LASER_TRANSMIT_PIN 5
+boolean laser_flag = 0;
+#define BUZZER_PIN 11
+void setup()
+{
+ Serial.begin(115200);
+ sim800L.begin(9600);
+ pinMode(LASER_RECEIVER_PIN,INPUT);
+ pinMode(LASER_TRANSMIT_PIN,OUTPUT);
+ digitalWrite(LASER_TRANSMIT_PIN,HIGH);
+ pinMode(BUZZER_PIN, OUTPUT);
+ digitalWrite(BUZZER_PIN,LOW);
+ sim800L.println("AT");
+ delay(1000);
+ sim800L.println("AT+CMGF=1");
+ delay(1000);
+}
+void loop()
+{
+ while(sim800L.available()){
+ Serial.println(sim800L.readString());
+ }
+ 
+ int laser_value = digitalRead(LASER_RECEIVER_PIN);
+ 
+ if(laser_value == LOW) {
+ digitalWrite(BUZZER_PIN,HIGH);
+ if(laser_flag == 0) {
+ laser_flag == 1;
+ make_call();
+ }
+ }
+ else { 
+13 of 13
+ digitalWrite(BUZZER_PIN,LOW);
+ laser_flag = 0;
+ }
+}
+void make_call()
+{
+ sim800L.println("ATD"+PHONE+";");
+ delay(20000);
+ sim800L.println("ATH");
+ delay(1000);
+}
